@@ -25,10 +25,12 @@ while True:
 
         if uid in users and users[uid]["password"] == pwd:
             role = users[uid]["role"]
+
+           
             if role == "guest":
                 while True:
                     print("\n--- GUEST MENU ---")
-                    print("1. View Rooms\n2. Book Room\n3. Logout")
+                    print("1. View Rooms\n2. Book Room\n3. Pay\n4. Logout")
                     ch = int(input())
 
                     if ch == 1:
@@ -50,7 +52,10 @@ while True:
                                     "room_no": room_no,
                                     "checkin": checkin,
                                     "checkout": checkout,
-                                    "status": "confirmed"
+                                    "status": "confirmed",
+                                    "paid": False,
+                                    "amount": r["rate"],
+                                    "extras": 0
                                 })
 
                                 print(f"Room booked! Booking ID: {booking_id}")
@@ -59,12 +64,28 @@ while True:
                         else:
                             print("Room not available")
 
+                    elif ch == 3:
+                        bid = int(input("Enter booking ID to pay: "))
+
+                        for b in bookings:
+                            if b["booking_id"] == bid and b["guest_id"] == uid:
+                                if not b["paid"]:
+                                    print(f"Amount to pay: Rs.{b['amount']}")
+                                    b["paid"] = True
+                                    print("Payment successful")
+                                else:
+                                    print("Already paid")
+                                break
+                        else:
+                            print("Booking not found")
+
                     else:
                         break
+
             elif role == "receptionist":
                 while True:
                     print("\n--- RECEPTIONIST MENU ---")
-                    print("1. View Bookings\n2. Generate Invoice\n3. Logout")
+                    print("1. View Bookings\n2. Check-in\n3. Check-out\n4. Generate Invoice\n5. Logout")
                     ch = int(input())
 
                     if ch == 1:
@@ -75,15 +96,54 @@ while True:
                         bid = int(input("Enter booking ID: "))
 
                         for b in bookings:
-                            if b["booking_id"] == bid:
+                            if b["booking_id"] == bid and b["paid"]:
                                 for r in rooms:
                                     if r["room_no"] == b["room_no"]:
-                                        amount = r["rate"]
-                                        print(f"Invoice for Booking {bid}: Rs.{amount}")
+                                        r["status"] = "occupied"
+                                        print("Guest checked in")
                                         break
                                 break
+                        else:
+                            print("Payment not done or booking not found")
+
+                    elif ch == 3:
+                        bid = int(input("Enter booking ID: "))
+                        extra = float(input("Enter extra charges: "))
+
+                        for b in bookings:
+                            if b["booking_id"] == bid:
+                                b["extras"] = extra
+
+                                for r in rooms:
+                                    if r["room_no"] == b["room_no"]:
+                                        r["status"] = "available"
+                                        total = b["amount"] + b["extras"]
+
+                                        print(f"Final Bill: Rs.{total}")
+                                        print("Checked out successfully")
+                                        break
+                                break
+                        else:
+                            print("Booking not found")
+
+                    elif ch == 4:
+                        bid = int(input("Enter booking ID: "))
+
+                        for b in bookings:
+                            if b["booking_id"] == bid:
+                                total = b["amount"] + b["extras"]
+                                print("\n--- INVOICE ---")
+                                print(f"Booking ID: {bid}")
+                                print(f"Room Charge: Rs.{b['amount']}")
+                                print(f"Extras: Rs.{b['extras']}")
+                                print(f"Total: Rs.{total}")
+                                break
+                        else:
+                            print("Booking not found")
+
                     else:
                         break
+
             elif role == "manager":
                 while True:
                     print("\n--- MANAGER MENU ---")
@@ -95,7 +155,6 @@ while True:
                         type_ = input("Type: ")
                         floor = int(input("Floor: "))
                         rate = float(input("Rate: "))
-
 
                         rooms.append({
                             "room_no": room_no,
@@ -118,5 +177,5 @@ while True:
             print("Invalid login")
 
     else:
-        print("Exiting....")
+        print("Exiting...")
         break
