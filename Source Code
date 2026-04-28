@@ -1,0 +1,122 @@
+users = {}
+rooms = []
+bookings = []
+user_id = 1
+booking_id = 1
+rooms.append({"room_no": 101, "type": "AC", "floor": 1, "rate": 2000, "status": "available"})
+rooms.append({"room_no": 102, "type": "Non-AC", "floor": 1, "rate": 1500, "status": "available"})
+
+while True:
+    print("\n1. Register\n2. Login\n3. Exit")
+    choice = int(input())
+
+    if choice == 1:
+        name = input("Enter name: ")
+        password = input("Enter password: ")
+        role = input("Enter role (guest/receptionist/manager): ").lower()
+
+        users[user_id] = {"name": name, "password": password, "role": role}
+        print(f"Registered successfully. User ID: {user_id}")
+        user_id += 1
+
+    elif choice == 2:
+        uid = int(input("Enter user ID: "))
+        pwd = input("Enter password: ")
+
+        if uid in users and users[uid]["password"] == pwd:
+            role = users[uid]["role"]
+            if role == "guest":
+                while True:
+                    print("\n--- GUEST MENU ---")
+                    print("1. View Rooms\n2. Book Room\n3. Logout")
+                    ch = int(input())
+
+                    if ch == 1:
+                        for r in rooms:
+                            print(r)
+
+                    elif ch == 2:
+                        room_no = int(input("Enter room number: "))
+                        checkin = input("Enter check-in date: ")
+                        checkout = input("Enter check-out date: ")
+
+                        for r in rooms:
+                            if r["room_no"] == room_no and r["status"] == "available":
+                                r["status"] = "booked"
+
+                                bookings.append({
+                                    "booking_id": booking_id,
+                                    "guest_id": uid,
+                                    "room_no": room_no,
+                                    "checkin": checkin,
+                                    "checkout": checkout,
+                                    "status": "confirmed"
+                                })
+
+                                print(f"Room booked! Booking ID: {booking_id}")
+                                booking_id += 1
+                                break
+                        else:
+                            print("Room not available")
+
+                    else:
+                        break
+            elif role == "receptionist":
+                while True:
+                    print("\n--- RECEPTIONIST MENU ---")
+                    print("1. View Bookings\n2. Generate Invoice\n3. Logout")
+                    ch = int(input())
+
+                    if ch == 1:
+                        for b in bookings:
+                            print(b)
+
+                    elif ch == 2:
+                        bid = int(input("Enter booking ID: "))
+
+                        for b in bookings:
+                            if b["booking_id"] == bid:
+                                for r in rooms:
+                                    if r["room_no"] == b["room_no"]:
+                                        amount = r["rate"]
+                                        print(f"Invoice for Booking {bid}: Rs.{amount}")
+                                        break
+                                break
+                    else:
+                        break
+            elif role == "manager":
+                while True:
+                    print("\n--- MANAGER MENU ---")
+                    print("1. Add Room\n2. View Rooms\n3. Logout")
+                    ch = int(input())
+
+                    if ch == 1:
+                        room_no = int(input("Room number: "))
+                        type_ = input("Type: ")
+                        floor = int(input("Floor: "))
+                        rate = float(input("Rate: "))
+
+
+                        rooms.append({
+                            "room_no": room_no,
+                            "type": type_,
+                            "floor": floor,
+                            "rate": rate,
+                            "status": "available"
+                        })
+
+                        print("Room added")
+
+                    elif ch == 2:
+                        for r in rooms:
+                            print(r)
+
+                    else:
+                        break
+
+        else:
+            print("Invalid login")
+
+    else:
+        print("Exiting....")
+        break
